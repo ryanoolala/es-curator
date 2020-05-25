@@ -28,7 +28,7 @@ func init() {
 		fmt.Printf("Unable to decode into struct, %v", err)
 	}
 
-	log.Println("host is %s", configuration.ESHost)
+	log.Printf("host is %s\n", configuration.ESHost)
 }
 
 func createESClient() *elasticsearch.Client {
