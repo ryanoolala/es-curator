@@ -1,43 +1,37 @@
 package main
 
 import (
-	"encoding/json"
+	"fmt"
 	"log"
-	"strings"
 
-	"github.com/elastic/go-elasticsearch"
+	"github.com/spf13/viper"
 )
 
-var es *elasticsearch.Client
+var (
+	configuration Configurations
+)
 
 func init() {
-	es = createESClient()
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+	viper.SetConfigType("yml")
+
+	if err := viper.ReadInConfig(); err != nil {
+		fmt.Printf("Error reading config file, %s", err)
+	}
+
+	err := viper.Unmarshal(&configuration)
+	if err != nil {
+		fmt.Printf("Unable to decode into struct, %v", err)
+	}
+
+	log.Printf("Using elasticsearch at: %s\n", configuration.ESHost)
 }
 
 func main() {
 	log.SetFlags(0)
 
-	var (
-		r map[string]interface{}
-		// wg sync.WaitGroup
-	)
+	cluster := createESClient(configuration)
 
-	res, err := es.Info()
-	if err != nil {
-		log.Fatalf("Error getting response: %s", err)
-	}
-	defer res.Body.Close()
-	// Check response status
-	if res.IsError() {
-		log.Fatalf("Error: %s", res.String())
-	}
-	// Deserialize the response into a map.
-	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
-		log.Fatalf("Error parsing the response body: %s", err)
-	}
-	// Print client and server version numbers.
-	// log.Printf("Client: %s", )
-	log.Printf("Server: %s", r["version"].(map[string]interface{})["number"])
-	log.Println(strings.Repeat("~", 37))
-
+	info(cluster)
 }

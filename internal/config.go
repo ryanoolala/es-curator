@@ -11,6 +11,7 @@ type Configurations struct {
 type Indexes struct {
 	name         string
 	monthsWindow int16
+	dateFormat   string
 }
 
 // SnapshotConfigurations exported
